@@ -21,14 +21,23 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.fdmtech.mybatis.scala.builder._
 import org.fdmtech.mybatis.scala.mapping._
 
+/**
+ * Factory of PersistenceSession instances
+ */
 class PersistenceSessionFactory(factory : SqlSessionFactory) {
   def createSession = new PersistenceSession(factory)
 }
 
+/**
+ * Disconnected Persistence Session
+ */
 class PersistenceSession(f : SqlSessionFactory) {
 
   type Callback = (SqlSession) => Unit
 
+  /**
+   * Provides a session, but does not manage any transactional code
+   */
   def managed(call : Callback) : Unit = {
     val session = f.openSession
     try {
@@ -39,6 +48,9 @@ class PersistenceSession(f : SqlSessionFactory) {
     }
   }
 
+  /**
+   * Provides a session and rollback at the end
+   */
   def readOnly(call : Callback) : Unit = {
     val session = f.openSession
     try {
@@ -50,6 +62,9 @@ class PersistenceSession(f : SqlSessionFactory) {
     }
   }
 
+  /**
+   * Provides a session and commit at the end. Rollback if any exception.
+   */
   def transaction(call : Callback) : Unit = {
     val session = f.openSession
     try {

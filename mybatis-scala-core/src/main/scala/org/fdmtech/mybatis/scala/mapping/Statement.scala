@@ -61,7 +61,7 @@ abstract class Statement[P](statementType : StatementType, timeout : Int, flushC
  * @type P Parameter type
  * @type R Return type
  */
-abstract class Select[P <: AnyRef, R](
+abstract class Select[P, R](
   resultMap : ResultMap = null,
   resultSetType : ResultSetType = ResultSetType.FORWARD_ONLY,
   statementType : StatementType = StatementType.PREPARED,
@@ -73,7 +73,13 @@ abstract class Select[P <: AnyRef, R](
   (implicit Pm : Manifest[P], Rm : Manifest[R])
   extends Statement[P](statementType, timeout, flushCache, databaseId) {
 
-  def apply(p : P = null.asInstanceOf[P], bounds : RowBounds = RowBounds.DEFAULT)(implicit s : SqlSession) : R = {
+  def apply()(implicit s : SqlSession) : R = apply(null.asInstanceOf[P], RowBounds.DEFAULT)
+
+  def apply(p : P)(implicit s : SqlSession) : R = apply(p, RowBounds.DEFAULT)
+
+  def apply(bounds : RowBounds)(implicit s : SqlSession) : R = apply(null.asInstanceOf[P], bounds)
+
+  def apply(p : P, bounds : RowBounds)(implicit s : SqlSession) : R = {
     import scala.collection.JavaConversions._
     p match {
       case param : P =>
@@ -89,7 +95,7 @@ abstract class Select[P <: AnyRef, R](
         else {
           s.selectOne(getStatementId, param).asInstanceOf[R]
         }
-      case null =>
+      case _ =>
         // Scala List case
         if (Rm.erasure.isAssignableFrom(classOf[List[_]])) {
           s.selectList(getStatementId, bounds).toList.asInstanceOf[R]
