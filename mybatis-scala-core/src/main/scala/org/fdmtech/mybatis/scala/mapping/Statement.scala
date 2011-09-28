@@ -56,6 +56,11 @@ abstract class Statement[P](statementType : StatementType, timeout : Int, flushC
 
 }
 
+/**
+ * Mybatis select method
+ * @type P Parameter type
+ * @type R Return type
+ */
 abstract class Select[P <: AnyRef, R](
   resultMap : ResultMap = null,
   resultSetType : ResultSetType = ResultSetType.FORWARD_ONLY,
@@ -136,6 +141,10 @@ abstract class Select[P <: AnyRef, R](
 
 }
 
+/**
+ * Mybatis update method
+ * @type P Parameter type
+ */
 abstract class Update[P](
   statementType : StatementType = StatementType.PREPARED,
   timeout : Int = 0,
@@ -154,6 +163,10 @@ abstract class Update[P](
 
 }
 
+/**
+ * Mybatis delete method
+ * @type P Parameter type
+ */
 abstract class Delete[P](
   statementType : StatementType = StatementType.PREPARED,
   timeout : Int = 0,
@@ -172,6 +185,10 @@ abstract class Delete[P](
 
 }
 
+/**
+ * Mybatis insert method
+ * @type P Parameter type
+ */
 abstract class Insert[P](
   statementType : StatementType = StatementType.PREPARED,
   timeout : Int = 0,

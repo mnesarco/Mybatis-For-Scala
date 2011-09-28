@@ -26,6 +26,10 @@ import java.io.{StringWriter, ByteArrayInputStream}
 import org.apache.ibatis.builder.xml.{XMLMapperBuilder, XMLMapperEntityResolver}
 import org.apache.ibatis.parsing.XPathParser
 
+/**
+ * This class translates the Scala configuration into mybatis XML
+ * and put it into the mybatis configuration
+ */
 class MappingBuilder(configuration : Configuration) {
 
   val resultMaps = new HashSet[ResultMap]

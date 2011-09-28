@@ -16,8 +16,14 @@
 
 package org.fdmtech.mybatis.scala.mapping
 
+/**
+ * Collection of mybatis bound methods
+ */
 abstract class Mapper {
 
+  /**
+   * List of methods to be added to the mybatis configuration
+   */
   def bind : List[_ <: Statement[_]]
 
 }
