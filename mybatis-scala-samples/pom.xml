@@ -8,12 +8,11 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <groupId>org.fdmtech</groupId>
-    <artifactId>mybatis-scala-core</artifactId>
-    <name>mybatis-scala-core</name>
+    <artifactId>mybatis-scala-samples</artifactId>
+    <name>mybatis-scala-samples</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
     <repositories>
         <repository>
             <id>scala-tools.org</id>
@@ -73,14 +72,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis</artifactId>
-            <version>3.0.5</version>
+            <groupId>org.fdmtech</groupId>
+            <artifactId>mybatis-scala-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>2.9.1</version>
+        </dependency>
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.0-801.jdbc4</version>
         </dependency>
     </dependencies>
 

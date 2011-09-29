@@ -94,7 +94,7 @@ case class Discriminator(
 
 case class Constructor(val args : BaseArg*)
 
-case class ResultMap(resultType : Class[_], parent : ResultMap = null) {
+class ResultMap(var resultType : Class[_], var parent : ResultMap = null) {
 
   val mappings = new ListBuffer[ResultMapping]
   var constructor : Constructor = null
