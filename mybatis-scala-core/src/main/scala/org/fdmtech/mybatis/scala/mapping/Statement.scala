@@ -23,17 +23,29 @@ import scala.xml._
 import org.apache.ibatis.session.RowBounds
 import java.util.{List => JList}
 
+/** Base class for all MyBatis Methods (Select,Insert,Update,Delete)
+ */
 abstract class Statement[P](statementType : StatementType, timeout : Int, flushCache : Boolean, databaseId : String)
   (implicit Pm : Manifest[P]) {
 
+  /** Mybatis dynamic SQL Node (XML)
+   *  @see Mybatis User's guide'
+   */
   var sql : Node = _
 
+  /** Statement Id, a unique ID used by Mybatis to identify a mapped statement
+   */
   def getStatementId = this.getClass.getName
 
+  /** Any one of STATEMENT, PREPARED or CALLABLE.
+   *  This causes MyBatis to use Statement, PreparedStatement or CallableStatement respectively. Default: PREPARED
+   */
   def getStatementType = {
     statementType.toString
   }
 
+  /** The fully qualified class name or alias for the parameter that will be passed into this statement.
+   */
   def getParameterType = {
     Pm.erasure.getName match {
       case "void" => null
@@ -41,25 +53,36 @@ abstract class Statement[P](statementType : StatementType, timeout : Int, flushC
     }
   }
 
+  /** The maximum time the driver will wait for the database to return from a request, before throwing an exception.
+   *  Default is unset (driver dependent).
+   */
   def getTimeout = {
     if (timeout == 0) null else timeout.toString
   }
 
+  /** Setting this to true will cause the cache to be flushed whenever this statement is called.
+   *  Default: false for select statements.
+   */
   def getFlushCache = flushCache.toString
 
+  /** Undocumented feature
+   */
   def getDatabaseId = databaseId
-
-  def ::(n : Node) : this.type = {
-    sql = n
-    this
-  }
 
 }
 
-/**
- * Mybatis select method
- * @tparam P Parameter type
- * @tparam R Return type
+/** Mybatis SELECT mapped statement
+ *
+ *  @tparam P The type for the parameter that will be passed into this statement.
+ *  @tparam R The type for the expected type that will be returned from this statement.
+ *  @param resultMap A reference to an external resultMap. Result maps are the most powerful feature of MyBatis, and with a good understanding of them, many difficult mapping cases can be solved.
+ *  @param flushCache Setting this to true will cause the cache to be flushed whenever this statement is called. Default: false for select statements.
+ *  @param useCache Setting this to true will cause the results of this statement to be cached. Default: true for select statements.
+ *  @param timeout This sets the maximum time the driver will wait for the database to return from a request, before throwing an exception. Default is unset (driver dependent).
+ *  @param fetchSize This is a driver hint that will attempt to cause the driver to return results in batches of rows numbering in size equal to this setting. Default is unset (driver dependent).
+ *  @param statementType Any one of STATEMENT, PREPARED or CALLABLE. This causes MyBatis to use Statement, PreparedStatement or CallableStatement respectively. Default: PREPARED.
+ *  @param resultSetType Any one of FORWARD_ONLY|SCROLL_SENSITIVE|SCROLL_INSENSITIVE. Default is unset (driver dependent).
+ *  @param databaseId Undocumented feature
  */
 abstract class Select[P, R](
   resultMap : ResultMap = null,
@@ -147,9 +170,13 @@ abstract class Select[P, R](
 
 }
 
-/**
- * Mybatis update method
- * @tparam P Parameter type
+/** Mybatis UPDATE mapped statement
+ *
+ *  @tparam P The type for the parameter that will be passed into this statement.
+ *  @param flushCache Setting this to true will cause the cache to be flushed whenever this statement is called. Default: false for select statements.
+ *  @param timeout This sets the maximum time the driver will wait for the database to return from a request, before throwing an exception. Default is unset (driver dependent).
+ *  @param statementType Any one of STATEMENT, PREPARED or CALLABLE. This causes MyBatis to use Statement, PreparedStatement or CallableStatement respectively. Default: PREPARED.
+ *  @param databaseId Undocumented feature
  */
 abstract class Update[P](
   statementType : StatementType = StatementType.PREPARED,
@@ -169,9 +196,13 @@ abstract class Update[P](
 
 }
 
-/**
- * Mybatis delete method
- * @tparam P Parameter type
+/** Mybatis DELETE mapped statement
+ *
+ *  @tparam P The type for the parameter that will be passed into this statement.
+ *  @param flushCache Setting this to true will cause the cache to be flushed whenever this statement is called. Default: false for select statements.
+ *  @param timeout This sets the maximum time the driver will wait for the database to return from a request, before throwing an exception. Default is unset (driver dependent).
+ *  @param statementType Any one of STATEMENT, PREPARED or CALLABLE. This causes MyBatis to use Statement, PreparedStatement or CallableStatement respectively. Default: PREPARED.
+ *  @param databaseId Undocumented feature
  */
 abstract class Delete[P](
   statementType : StatementType = StatementType.PREPARED,
@@ -191,9 +222,24 @@ abstract class Delete[P](
 
 }
 
-/**
- * Mybatis insert method
- * @tparam P Parameter type
+/** Mybatis INSERT mapped statement
+ *
+ *  @tparam P The type for the parameter that will be passed into this statement.
+ *  @param flushCache Setting this to true will cause the cache to be flushed whenever this statement is called.
+ *    Default: false for select statements.
+ *  @param timeout This sets the maximum time the driver will wait for the database to return from a request,
+ *    before throwing an exception. Default is unset (driver dependent).
+ *  @param statementType Any one of STATEMENT, PREPARED or CALLABLE. This causes MyBatis to use Statement,
+ *    PreparedStatement or CallableStatement respectively. Default: PREPARED.
+ *  @param databaseId Undocumented feature
+ *  @param keyProperty Identifies a property into which MyBatis will set the key value returned by getGeneratedKeys,
+ *    or by a selectKey child element of the insert statement. Default: unset.
+ *  @param keyColumn Sets the name of the column in the table with a generated key.
+ *    This is only required in certain databases (like PostgreSQL)
+ *    when the key column is not the first column in the table.
+ *  @param useGeneratedKeys This tells MyBatis to use the JDBC getGeneratedKeys method to retrieve keys
+ *    generated internally by the database (e.g. auto increment fields in RDBMS like MySQL or SQL Server).
+ *    Default: false
  */
 abstract class Insert[P](
   statementType : StatementType = StatementType.PREPARED,
