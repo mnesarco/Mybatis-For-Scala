@@ -10,6 +10,7 @@
     <groupId>org.fdmtech</groupId>
     <artifactId>mybatis-scala-core</artifactId>
     <name>mybatis-scala-core</name>
+    <url>http://www.fdmtech.org/mybatis-for-scala/</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>

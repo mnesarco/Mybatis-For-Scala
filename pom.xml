@@ -6,6 +6,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>mybatis-scala</name>
+    <description>A Scala friendly API to mybatis persistence framework</description>
     <url>http://www.fdmtech.org</url>
     <build>
         <plugins>
@@ -36,4 +37,27 @@
             <url>scp://www.fdmhosting.com:7822/home/fdmhost/public_html/fdmtech.org/maven2</url>
         </snapshotRepository>
     </distributionManagement>
+    <developers>
+        <developer>
+            <id>mnesarco</id>
+            <email>mnesarco@gmail.com</email>
+            <name>Frank David Martinez M</name>
+            <timezone>-5</timezone>
+            <roles>
+                <role>Lead developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/mnesarco/Mybatis-For-Scala/issues</url>
+    </issueManagement>
 </project>
