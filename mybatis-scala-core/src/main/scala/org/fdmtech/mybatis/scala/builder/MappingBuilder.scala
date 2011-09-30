@@ -26,16 +26,17 @@ import java.io.{StringWriter, ByteArrayInputStream}
 import org.apache.ibatis.builder.xml.{XMLMapperBuilder, XMLMapperEntityResolver}
 import org.apache.ibatis.parsing.XPathParser
 
-/**
- * This class translates the Scala configuration into mybatis XML
- * and put it into the mybatis configuration
+/** This class translates the Scala configuration into mybatis XML
+ *  and put it into the mybatis configuration object
  */
 class MappingBuilder(configuration : Configuration) {
 
-  val resultMaps = new HashSet[ResultMap]
-  val resultMapNodes = new ListBuffer[Node]
-  val statements = new ListBuffer[Node]
+  private val resultMaps = new HashSet[ResultMap]
+  private val resultMapNodes = new ListBuffer[Node]
+  private val statements = new ListBuffer[Node]
 
+  /** Imports all defined Mappers, Statements and ResultMaps into the configuration
+   */
   def build : Unit = {
 
     // Build XML Representation
@@ -50,6 +51,9 @@ class MappingBuilder(configuration : Configuration) {
 
   }
 
+  /** Configure a resultMap
+   *  @param rm a result map definition
+   */
   def addResultMap(rm : ResultMap) : Unit = {
     if (!resultMaps.contains(rm)) {
       resultMapNodes += <resultMap
@@ -58,15 +62,22 @@ class MappingBuilder(configuration : Configuration) {
           extends={className(rm.parent)}>
           {addConstructor(rm)}
           {addMappings(rm.mappings)}
+          {addDiscriminator(rm)}
       </resultMap>;
       resultMaps.add(rm)
     }
   }
 
+  /** Configure a mapper
+   *  @param m a mapper definition
+   */
   def addMapper(m : Mapper) : Unit = {
     for (s <- m.bind) addStatement(s)
   }
 
+  /** Configure a statement
+   *  @param s a statement definition (Select, Insert, Update, Delete)
+   */
   def addStatement(s : Statement[_]) : Unit = {
     s match {
       case select : Select[_,_] =>
@@ -127,7 +138,7 @@ class MappingBuilder(configuration : Configuration) {
     }
   }
 
-  protected def getSql(stmt : Statement[_]) = {
+  private def getSql(stmt : Statement[_]) = {
     for (n <- stmt.sql.child) yield
       n match {
         case <sql>{_*}</sql> => n.child
@@ -135,7 +146,7 @@ class MappingBuilder(configuration : Configuration) {
       }
   }
 
-  protected def addConstructor(rm : ResultMap) = {
+  private def addConstructor(rm : ResultMap) = {
     rm.constructor match {
       case c:Constructor =>
         <constructor>
@@ -145,7 +156,28 @@ class MappingBuilder(configuration : Configuration) {
     }
   }
 
-  protected def addMappings(mappings : Seq[ResultMapping]) = {
+  private def addDiscriminator(rm : ResultMap) = {
+    rm.discriminator match {
+      case Discriminator(column,javaType,jdbcType,typeHandler,cases) =>
+        val caseNodes = for (c <- cases) yield {
+          c match {
+            case Case(value, resultMap, resultType) =>
+              <case value={value} resultMap={className(resultMap)} resultType={className(resultType)} />;
+          }
+        }
+        <discriminator
+            column={column}
+            javaType={className(javaType)}
+            jdbcType={jdbcTypeString(jdbcType)}
+            typeHandler={className(typeHandler)}
+          >
+          {caseNodes}
+        </discriminator>;
+      case null => Seq[Node]()
+    }
+  }
+
+  private def addMappings(mappings : Seq[ResultMapping]) = {
     val nodes = for (m <- mappings) yield
       m match {
         case Id(property,column,javaType,jdbcType,typeHandler) =>
@@ -207,7 +239,7 @@ class MappingBuilder(configuration : Configuration) {
       nodes.sortWith((a,b) => ResultMappingOrder(a) < ResultMappingOrder(b))
   }
 
-  protected def className(a : AnyRef) = {
+  private def className(a : AnyRef) = {
     val name = a match {
       case null => null
       case c:Class[_] => c.getName
@@ -227,16 +259,16 @@ class MappingBuilder(configuration : Configuration) {
     }
   }
 
-  protected def jdbcTypeString(t : JdbcType) = t match {
+  private def jdbcTypeString(t : JdbcType) = t match {
     case null => null
     case JdbcType.UNDEFINED => null
     case _ => t.toString
   }
 
-  protected def mapperNode =
+  private def mapperNode =
     <mapper namespace="SCALA">
       {resultMapNodes}
       {statements}
-    </mapper>
+    </mapper>;
 
 }
