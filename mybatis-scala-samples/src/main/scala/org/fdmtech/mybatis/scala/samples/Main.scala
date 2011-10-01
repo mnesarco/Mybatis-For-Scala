@@ -34,7 +34,7 @@ object Main {
     builder config "mybatis.xml"
 
     // Add mappers
-    builder << PersonDAO << GroupDAO
+    builder << (PersonDAO, GroupDAO)
 
     // Build a factory
     val factory = builder.build

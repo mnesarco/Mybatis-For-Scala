@@ -16,7 +16,9 @@
 
 package org.fdmtech.mybatis.scala.samples.model
 
-class Person {
+import java.io.Serializable
+
+class Person extends Serializable {
 
   var id : Int = _
 

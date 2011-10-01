@@ -22,13 +22,6 @@ import org.fdmtech.mybatis.scala.builder._
 import org.fdmtech.mybatis.scala.mapping._
 
 /**
- * Factory of PersistenceSession instances
- */
-class PersistenceSessionFactory(factory : SqlSessionFactory) {
-  def createSession = new PersistenceSession(factory)
-}
-
-/**
  * Disconnected Persistence Session
  */
 class PersistenceSession(f : SqlSessionFactory) {

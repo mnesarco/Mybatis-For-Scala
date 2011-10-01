@@ -16,7 +16,9 @@
 
 package org.fdmtech.mybatis.scala.samples.model
 
-class Group {
+import java.io.Serializable
+
+class Group extends Serializable {
 
   var id : Int = _
 

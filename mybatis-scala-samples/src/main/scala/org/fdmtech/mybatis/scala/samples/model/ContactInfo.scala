@@ -16,7 +16,9 @@
 
 package org.fdmtech.mybatis.scala.samples.model
 
-class ContactInfo {
+import java.io.Serializable
+
+class ContactInfo extends Serializable {
 
   var streetAddress : String = _
 

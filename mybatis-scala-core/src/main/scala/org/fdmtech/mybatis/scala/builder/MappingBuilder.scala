@@ -34,6 +34,7 @@ class MappingBuilder(configuration : Configuration) {
   private val resultMaps = new HashSet[ResultMap]
   private val resultMapNodes = new ListBuffer[Node]
   private val statements = new ListBuffer[Node]
+  private var cache : Node = null
 
   /** Imports all defined Mappers, Statements and ResultMaps into the configuration
    */
@@ -135,6 +136,17 @@ class MappingBuilder(configuration : Configuration) {
             {getSql(insert)}
           </insert>;
       case _ => error("Invalid bound method")
+    }
+  }
+
+  def setCache(cache_ : Cache) : Unit = {
+    cache_ match {
+      case c : Cache =>
+        cache = <cache
+          eviction={c.eviction.toString}
+          flushInterval={if (c.flushInterval == 0) null else c.flushInterval.toString}
+          size={c.size.toString}
+          readOnly={c.readOnly.toString}/>;
     }
   }
 
@@ -267,6 +279,7 @@ class MappingBuilder(configuration : Configuration) {
 
   private def mapperNode =
     <mapper namespace="SCALA">
+      {cache}
       {resultMapNodes}
       {statements}
     </mapper>;

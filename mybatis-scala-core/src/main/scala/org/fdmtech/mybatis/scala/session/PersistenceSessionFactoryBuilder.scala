@@ -19,16 +19,22 @@ package org.fdmtech.mybatis.scala.session
 import org.apache.ibatis.builder.xml.XMLConfigBuilder
 import org.apache.ibatis.io.Resources
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.Configuration
 import java.io.Reader
 import org.fdmtech.mybatis.scala.mapping._
 import org.fdmtech.mybatis.scala.builder._
 
+/** Main configuration builder
+ */
 class PersistenceSessionFactoryBuilder {
 
   protected var configuration : Configuration = _
   protected var mapperBuilder : MappingBuilder = _
 
+  /** Loads the main configuration from a Mybatis xml config.
+   *  @param reader Mybatis config xml.
+   */
   def config(reader : Reader) : this.type = {
     val configBuilder = new XMLConfigBuilder(reader)
     configuration = configBuilder.parse
@@ -36,6 +42,9 @@ class PersistenceSessionFactoryBuilder {
     this
   }
 
+  /** Loads the main configuration from a Mybatis xml config file.
+   *  @param reader Mybatis config xml path (in the classpath).
+   */
   def config(path : String) : this.type = config(Resources.getResourceAsReader(path))
 
   def << (f : Statement[_], s : Statement[_]*) : this.type = {
@@ -50,10 +59,21 @@ class PersistenceSessionFactoryBuilder {
     this
   }
 
+  def << (c : Cache) : this.type = {
+    mapperBuilder.setCache(c)
+    this
+  }
+
   def build : PersistenceSessionFactory = {
     mapperBuilder.build
     val factoryBuilder = new SqlSessionFactoryBuilder
     new PersistenceSessionFactory(factoryBuilder.build(configuration))
   }
 
+}
+
+/** Factory of PersistenceSession instances
+ */
+class PersistenceSessionFactory(factory : SqlSessionFactory) {
+  def createSession = new PersistenceSession(factory)
 }
