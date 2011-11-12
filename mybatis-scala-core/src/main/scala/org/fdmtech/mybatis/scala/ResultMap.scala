@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-package org.fdmtech.mybatis.scala.mapping
+package org.fdmtech.mybatis.scala
 
-import org.apache.ibatis.`type`.JdbcType
-import org.apache.ibatis.`type`.TypeHandler
-import org.apache.ibatis.mapping.ResultFlag
 import scala.collection.mutable.ListBuffer
 import scala.xml.Node
 
@@ -47,11 +44,11 @@ abstract class BaseArg extends ResultMapping
  */
 case class Arg(
   column : String = null,
-  javaType : Class[_] = null,
+  javaType : Type[_] = null,
   jdbcType : JdbcType = JdbcType.UNDEFINED,
-  typeHandler : Class[_ <: TypeHandler] = null,
-  select : Statement[_] = null,
-  resultMap : ResultMap = null
+  typeHandler : Type[_ <: TypeHandler] = null,
+  select : Statement = null,
+  resultMap : ResultMap[_] = null
 )
 extends BaseArg
 
@@ -72,9 +69,9 @@ extends BaseArg
  */
 case class IdArg(
   column : String = null,
-  javaType : Class[_] = null,
+  javaType : Type[_] = null,
   jdbcType : JdbcType = JdbcType.UNDEFINED,
-  typeHandler : Class[_ <: TypeHandler] = null
+  typeHandler : Type[_ <: TypeHandler] = null
 )
 extends BaseArg
 
@@ -104,9 +101,9 @@ extends BaseArg
 case class Result(
   property : String = null,
   column : String = null,
-  javaType : Class[_] = null,
+  javaType : Type[_] = null,
   jdbcType : JdbcType = JdbcType.UNDEFINED,
-  typeHandler : Class[_ <: TypeHandler] = null
+  typeHandler : Type[_ <: TypeHandler] = null
 ) extends ResultMapping
 
 /** These are the most basic of result mappings.
@@ -139,9 +136,9 @@ case class Result(
 case class Id(
   property : String = null,
   column : String = null,
-  javaType : Class[_] = null,
+  javaType : Type[_] = null,
   jdbcType : JdbcType = JdbcType.UNDEFINED,
-  typeHandler : Class[_ <: TypeHandler] = null
+  typeHandler : Type[_ <: TypeHandler] = null
 ) extends ResultMapping
 
 /** The association element deals with a "has-one" type relationship.
@@ -188,11 +185,11 @@ case class Id(
 case class Association(
   property : String = null,
   column : String = null,
-  javaType : Class[_] = null,
+  javaType : Type[_] = null,
   jdbcType : JdbcType = JdbcType.UNDEFINED,
-  typeHandler : Class[_ <: TypeHandler] = null,
-  select : Statement[_] = null,
-  resultMap : ResultMap = null,
+  typeHandler : Type[_ <: TypeHandler] = null,
+  select : Statement = null,
+  resultMap : ResultMap[_] = null,
   notNullColumn : String = null
 ) extends ResultMapping
 
@@ -234,18 +231,18 @@ case class Association(
 case class Collection(
   property : String = null,
   column : String = null,
-  javaType : Class[_] = null,
+  javaType : Type[_] = null,
   jdbcType : JdbcType = JdbcType.UNDEFINED,
-  ofType : Class[_] = null,
-  typeHandler : Class[_ <: TypeHandler] = null,
-  select : Statement[_] = null,
-  resultMap : ResultMap = null,
+  ofType : Type[_] = null,
+  typeHandler : Type[_ <: TypeHandler] = null,
+  select : Statement = null,
+  resultMap : ResultMap[_] = null,
   notNullColumn : String = null
 ) extends ResultMapping
 
 /** A concrete mapping used by a discriminator case.
  */
-case class Case(value : String, resultMap : ResultMap = null, resultType : Class[_] = null)
+case class Case(value : String, resultMap : ResultMap[_] = null, resultType : Type[_] = null)
 
 /** Sometimes a single database query might return result sets of many different (but hopefully somewhat related)
  *  data types. The discriminator element was designed to deal with this situation, and others, including class
@@ -276,9 +273,9 @@ case class Case(value : String, resultMap : ResultMap = null, resultType : Class
  */
 case class Discriminator(
   column : String = null,
-  javaType : Class[_] = null,
+  javaType : Type[_] = null,
   jdbcType : JdbcType = JdbcType.UNDEFINED,
-  typeHandler : Class[_ <: TypeHandler] = null,
+  typeHandler : Type[_ <: TypeHandler] = null,
   cases : List[Case] = List()
 )
 
@@ -310,123 +307,90 @@ case class Constructor(val args : BaseArg*)
  *  @param resultType The class of the result
  *  @param parent A reference to a parent resultMap (resultMap inheritence)
  */
-class ResultMap(var resultType : Class[_], var parent : ResultMap = null) {
+class ResultMap[Result : Manifest](val parent : ResultMap[_] = null) {
 
+  var fqi : FQI = null
+  val resultType = Type[Result]
   val mappings = new ListBuffer[ResultMapping]
   var constructor : Constructor = null
   var discriminator : Discriminator = null
 
   /** Maps a single value to a single property.
-   *  For a more specific documentation @see [[org.fdmtech.mybatis.scala.mapping.Result]]
+   *  For a more specific documentation @see [[org.fdmtech.mybatis.scala.Result]]
    */
   def result(
     property : String = null,
     column : String = null,
-    javaType : Class[_] = null,
+    javaType : Type[_] = null,
     jdbcType : JdbcType = JdbcType.UNDEFINED,
-    typeHandler : Class[_ <: TypeHandler] = null) = mappings += Result(property,column,javaType,jdbcType,typeHandler)
+    typeHandler : Type[_ <: TypeHandler] = null) = {
+      mappings += Result(property,column,javaType,jdbcType,typeHandler)
+      this
+  }
 
   /** Maps a single value to a single property with ID Flag.
-   *  For a more specific documentation @see [[org.fdmtech.mybatis.scala.mapping.Id]]
+   *  For a more specific documentation @see [[org.fdmtech.mybatis.scala.Id]]
    */
   def id(
     property : String = null,
     column : String = null,
-    javaType : Class[_] = null,
+    javaType : Type[_] = null,
     jdbcType : JdbcType = JdbcType.UNDEFINED,
-    typeHandler : Class[_ <: TypeHandler] = null) = mappings += Id(property,column,javaType,jdbcType,typeHandler)
+    typeHandler : Type[_ <: TypeHandler] = null) = {
+      mappings += Id(property,column,javaType,jdbcType,typeHandler)
+      this
+  }
 
   /** Maps a complex value to a single property, "has-one" relationship.
-   *  For a more specific documentation @see [[org.fdmtech.mybatis.scala.mapping.Association]]
+   *  For a more specific documentation @see [[org.fdmtech.mybatis.scala.Association]]
    */
-  def association(
+  def association[T : Manifest](
     property : String = null,
     column : String = null,
-    javaType : Class[_] = null,
     jdbcType : JdbcType = JdbcType.UNDEFINED,
-    typeHandler : Class[_ <: TypeHandler] = null,
-    select : Statement[_] = null,
-    resultMap : ResultMap = null,
-    notNullColumn : String = null) = mappings += Association(property,column,javaType,jdbcType,typeHandler,select,resultMap,notNullColumn)
+    typeHandler : Type[_ <: TypeHandler] = null,
+    select : Statement = null,
+    resultMap : ResultMap[_] = null,
+    notNullColumn : String = null) = {
+      mappings += Association(property,column,Type[T],jdbcType,typeHandler,select,resultMap,notNullColumn)
+      this
+  }
 
   /** Maps a complex value to a collection property, "has-many" relationship.
-   *  For a more specific documentation @see [[org.fdmtech.mybatis.scala.mapping.Collection]]
+   *  For a more specific documentation @see [[org.fdmtech.mybatis.scala.Collection]]
    */
-  def collection(
+  def collection[T : Manifest](
     property : String = null,
     column : String = null,
-    javaType : Class[_] = null,
+    collectionType : Type[_] = null,
     jdbcType : JdbcType = JdbcType.UNDEFINED,
-    ofType : Class[_] = null,
-    typeHandler : Class[_ <: TypeHandler] = null,
-    select : Statement[_] = null,
-    resultMap : ResultMap = null,
-    notNullColumn : String = null) = mappings += Collection(property,column,javaType,jdbcType,ofType,typeHandler,select,resultMap,notNullColumn)
+    typeHandler : Type[_ <: TypeHandler] = null,
+    select : Statement = null,
+    resultMap : ResultMap[_] = null,
+    notNullColumn : String = null) = {
+      mappings += Collection(property,column,collectionType,jdbcType,Type[T],typeHandler,select,resultMap,notNullColumn)
+      this
+  }
 
   /** Maps results to a constructor arguments.
-   *  For a more specific documentation @see [[org.fdmtech.mybatis.scala.mapping.Constructor]]
+   *  For a more specific documentation @see [[org.fdmtech.mybatis.scala.Constructor]]
    */
-  def constructor(args : BaseArg*) : Unit = constructor = Constructor(args : _*)
+  def constructor(args : BaseArg*) : this.type = {
+    constructor = Constructor(args : _*)
+    this
+  }
 
-  /** For a more specific documentation @see [[org.fdmtech.mybatis.scala.mapping.Discriminator]]
+  /** For a more specific documentation @see [[org.fdmtech.mybatis.scala.Discriminator]]
    */
   def discriminator(
     column : String = null,
-    javaType : Class[_] = null,
+    javaType : Type[_] = null,
     jdbcType : JdbcType = JdbcType.UNDEFINED,
-    typeHandler : Class[_ <: TypeHandler] = null,
-    cases : List[Case] = List()) : Unit = discriminator = Discriminator(column,javaType,jdbcType,typeHandler,cases)
-
-}
-
-/** Mybatis cache supported eviction policies.
- *
- *  - LRU (Least Recently Used): Removes objects that haven’t been used for the longst period of time.
- *  - FIFO (First In First Out): Removes objects in the order that they entered the cache.
- *  - SOFT (Soft Reference): Removes objects based on the garbage collector state and the rules of Soft References.
- *  - WEAK (Weak Reference): More aggressively removes objects based on the garbage collector state and rules of Weak References.
- *
- *  The default is LRU.
- */
-object CacheEviction extends Enumeration("LRU", "FIFO", "SOFT", "WEAK") {
-  type CacheEviction = Value
-  val LRU, FIFO, SOFT, WEAK = Value
-}
-
-/** By default, there is no caching enabled, except for local session caching,
- *  which improves performance and is required to resolve circular dependencies.
- *  To enable a second level of caching, you simply need to add an instance
- *  of this class to the builder.
- *
- *  @param eviction eviction policy, [[org.fdmtech.mybatis.scala.mapping.CacheEviction]]
- *  @param flushInterval can be set to any positive integer and should represent a reasonable
- *    amount of time specified in milliseconds. The default is not set,
- *    thus no flush interval is used and the cache is only flushed by calls to statements.
- *  @param size can be set to any positive integer, keep in mind the size of the objects your
- *    caching and the available memory resources of your environment. The default is 1024.
- *  @param readOnly attribute can be set to true or false. A read-only cache will return
- *    the same instance of the cached object to all callers. Thus such objects should not be modified.
- *    This offers a significant performance advantage though.
- *    A read-write cache will return a copy (via serialization) of the cached object.
- *    This is slower, but safer, and thus the default is false.
- */
-class Cache(
-   val eviction : CacheEviction.CacheEviction = CacheEviction.LRU,
-   val flushInterval : Int = 0,
-   val size : Int = 1024,
-   val readOnly : Boolean = false
- ) {}
-
-object ResultMappingOrder {
-  def apply(mapping : Node) : Int = {
-    mapping match {
-      case <id/> => 0
-      case <idArg/> => 0
-      case <result/> => 1
-      case <arg/> => 1
-      case <association/> => 2
-      case <collection/> => 3
-      case _ => 9
-    }
+    typeHandler : Type[_ <: TypeHandler] = null,
+    cases : List[Case] = List()) : this.type = {
+      discriminator = Discriminator(column,javaType,jdbcType,typeHandler,cases)
+      this
   }
+
 }
+
